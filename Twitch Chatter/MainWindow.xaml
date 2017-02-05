@@ -1,0 +1,42 @@
+﻿<Window x:Class="Twitch_Chatter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Twitch_Chatter"
+        mc:Ignorable="d" d:DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="MainWindow" Height="338.646" Width="556.1"
+        >
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Dictionary1.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <!--<TabControl>-->
+
+            <ScrollViewer Margin="0,0,125,20" x:Name="MessagesScrollViewer">
+                <ItemsControl ItemsSource="{Binding Messages}"  >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <ScrollViewer HorizontalAlignment="Right" Width="125" Margin="0,0,0,20">
+                <ItemsControl x:Name="dataGrid"
+                  ItemsSource="{Binding Users}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+            <TextBox x:Name="CommandBox" Height="20" VerticalAlignment="Bottom" KeyDown="IRC_SendCommand" Text="{Binding Path=CommandBoxText, UpdateSourceTrigger=PropertyChanged}"/>
+        <!--</TabControl>-->
+    </Grid>
+</Window>
