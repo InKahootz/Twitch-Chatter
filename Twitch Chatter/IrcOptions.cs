@@ -13,7 +13,7 @@ namespace Twitch_Chatter
 
         public IrcOptions(string[] args)
         {
-            OptionsParser.ParseCommandLineArguments(args);
+            //OptionsParser.ParseCommandLineArguments(args);
             Channel = OptionsParser.Channel;
         }
     }

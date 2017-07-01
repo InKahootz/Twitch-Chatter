@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -42,6 +43,9 @@ namespace Twitch_Chatter
         private string commandBoxText;
         public MainWindow(StartupEventArgs e)
         {
+            //Debugger.Launch();
+
+            Options.ParseIni();
             Options.ParseOptions(e.Args);
 
             Messages = new ObservableCollection<string>();
@@ -51,7 +55,7 @@ namespace Twitch_Chatter
             InitializeComponent();
             DataContext = this;
 
-            ircClient = new IrcClient(new IrcOptions(e.Args));
+            ircClient = new IrcClient();
 
             RunClient();
         }
@@ -60,7 +64,7 @@ namespace Twitch_Chatter
         {
             if (e.Key == Key.Enter)
             {
-                ircClient.SendChatMesage(commandBoxText);
+                ircClient.ParseCommand(commandBoxText);
                 CommandBoxText = String.Empty;
             }
         }
@@ -77,32 +81,38 @@ namespace Twitch_Chatter
             while (true)
             {
                 var message = await ircClient.ReadMessageAsync();
-                if (!string.IsNullOrEmpty(message) && message != " ")
+                if (!string.IsNullOrWhiteSpace(message))
                 {
-                    string[] completeMsg = message.Split(' ');
-                    string[] identityInfo = completeMsg[1].Split(' ');
-                    if (completeMsg[2] == "PRIVMSG")
+                    var twitchMessage = new Message(message);
+                    if (twitchMessage.IsPrivateMessage)
                     {
-                        var match = new Regex(@"name=(.*?);.*PRIVMSG.*:(.*)").Match(message);
-                        string userName = match.Groups[1].Value;
-                        string text = match.Groups[2].Value;
-                        Messages.Add($"{userName}: {text}");
-                        MessagesScrollViewer.ScrollToBottom();
+                        Messages.Add($"{twitchMessage.DisplayName ?? twitchMessage.User}: {twitchMessage.UserMessage}");
+
+                        if (Messages.Count > 100)
+                        {
+                            Messages.RemoveAt(0);
+                        }
+
+                        //Console.WriteLine(MessagesScrollViewer.VerticalOffset);
+                        if (MessagesScrollViewer.VerticalOffset == MessagesScrollViewer.ScrollableHeight)
+                        {
+                            MessagesScrollViewer.ScrollToBottom();
+                        }
                         continue;
                     }
 
-                    if (completeMsg[1] == "001")
+                    if (twitchMessage.Command == 001)
                     {
                         ircClient.Join();
                     }
                     //After server sends 001 command, we can set mode to bot and join a channel
-                    if (completeMsg[1] == "004")
+                    if (twitchMessage.Command == 004)
                     {
                         ircClient.RequestMembership();
                         ircClient.RequestTags();
 
                     }
-                    if (completeMsg[1] == "376")
+                    if (twitchMessage.Command == 376)
                     {
                         // Request IRCv3 membership for capabilities such as usernames list
                         //ircClient.JoinRoom(chatChannel);
@@ -131,10 +141,10 @@ namespace Twitch_Chatter
                     //}
 
                     // JTV add or remove operator +o/-o
-                    if (identityInfo[0] == "jtv")
-                    {
+                    //if (identityInfo[0] == "jtv")
+                    //{
 
-                    }
+                    //}
 
                     //Console.WriteLine(message);
                 }

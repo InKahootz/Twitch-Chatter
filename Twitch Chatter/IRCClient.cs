@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Security.Authentication.ExtendedProtection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Twitch_Chatter
@@ -29,18 +30,13 @@ namespace Twitch_Chatter
             _tcpClient = new TcpClient("irc.chat.twitch.tv", 6667);
             _inputStream = new StreamReader(_tcpClient.GetStream());
             _outputStream = new StreamWriter(_tcpClient.GetStream()) { AutoFlush = true };
-        }
 
-        public IrcClient(IrcOptions options)
-            : this()
-        {
-            this._channel = options.Channel;
-            this._userName = Options.UserName;
+            this._channel = Options.Channel;
             this._token = Options.Token;
+            this._userName = Options.UserName;
 
             SendCredentials();
         }
-
 
 
         public IrcClient(string userName, string token, string channel)
@@ -56,18 +52,37 @@ namespace Twitch_Chatter
 
         public void Join()
         {
+            if (string.IsNullOrWhiteSpace(_channel)) return;
+
             _outputStream.WriteLine("JOIN #" + _channel + "\r\n");
         }
 
         public void JoinRoom(string channel)
         {
             this._channel = channel;
-            _outputStream.WriteLine("JOIN #" + channel + "\r\n");
+            Join();
         }
 
         public void ReplyPong(string message)
         {
             _outputStream.WriteLine(message.Replace("PING", "PONG"));
+        }
+
+        public void ParseCommand(string message)
+        {
+            if (message.StartsWith("/"))
+            {
+                var reg = Regex.Match(message, @"\/join (\w+)");
+                if (reg.Success)
+                {
+                    JoinRoom(reg.Groups[1].Value);
+                }
+            }
+            else
+            {
+                SendChatMesage(message);
+            }
+
         }
 
         public void SendChatMesage(string message)
