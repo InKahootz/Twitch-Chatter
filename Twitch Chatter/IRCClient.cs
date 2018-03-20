@@ -54,7 +54,11 @@ namespace Twitch_Chatter
         {
             if (string.IsNullOrWhiteSpace(_channel)) return;
 
+            //ChannelCache.GetChannelInfo(_channel);
+
             _outputStream.WriteLine("JOIN #" + _channel + "\r\n");
+
+
         }
 
         public void JoinRoom(string channel)
@@ -87,7 +91,7 @@ namespace Twitch_Chatter
 
         public void SendChatMesage(string message)
         {
-            SendIrcMessage($":{_userName}!{_userName}@{_userName}.tmi.twitch.tv PRIVMSG #{_channel} :{message}");
+            SendIrcMessage($"PRIVMSG #{_channel} :{message}");
         }
 
         public string ReadMessage()

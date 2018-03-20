@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Twitch_Chatter
 {
-    class Message
+    public class Message
     {
         private Type type;
         private const string TWITCH_INFO_REGEX = @"^:tmi\.twitch\.tv\s(?<command>\d+)\s(?<user>.*?)\s:(?<usermessage>.*)";
@@ -20,11 +20,16 @@ namespace Twitch_Chatter
         {
             type = GetType();
             ParseMessage(rawMessage);
+            SetBadges();
         }
 
         public string Badges { get; private set; }
 
         public string Bits { get; private set; }
+
+        public string Channel { get; set; }
+
+        public string Color { get; set; } = "Black";
 
         public string DisplayName { get; private set; }
 
@@ -67,6 +72,7 @@ namespace Twitch_Chatter
             {
                 IsPrivateMessage = true;
 
+                Channel = match.Groups["channel"].Value;
                 User = match.Groups["user"].Value;
                 UserMessage = match.Groups["usermessage"].Value;
 
@@ -88,6 +94,11 @@ namespace Twitch_Chatter
                 IsCommand = true;
                 Command = int.Parse(match.Groups["command"].Value);
             }
+
+        }
+
+        private void SetBadges()
+        {
 
         }
     }

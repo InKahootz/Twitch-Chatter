@@ -8,10 +8,8 @@ namespace Twitch_Chatter
 {
     internal static class Constants
     {
-        const string CLIENT_NAME = "Windows - Twitch Chatter";
-
-        const string CLIENT_ID = "u7ig9gqspx1556c6v5tptoa9s3vb4y";
-
-
+        // Client Id is not a secret. Public knowledge.
+        internal static string CLIENT_ID = "u7ig9gqspx1556c6v5tptoa9s3vb4y";
+        internal static string KRAKEN_BASE = "https://api.twitch.tv/kraken";
     }
 }

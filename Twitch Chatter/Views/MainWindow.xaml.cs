@@ -20,7 +20,10 @@ namespace Twitch_Chatter
         static string chatChannel;
         static MainWindow wnd;
 
-        public static ObservableCollection<string> Messages { get; set; }
+        public ChatTabViewModel SelectedChatTab { get; set; }
+        public ObservableCollection<ChatTabViewModel> ChatTabs { get; set; }
+
+        public ObservableCollection<Message> Messages { get; set; }
         public ObservableCollection<string> Users { get; set; }
 
         internal List<IrcClient> Clients { get; set; }
@@ -46,9 +49,10 @@ namespace Twitch_Chatter
             //Debugger.Launch();
 
             Options.ParseIni();
+            // Override ini with command line args
             Options.ParseOptions(e.Args);
 
-            Messages = new ObservableCollection<string>();
+            Messages = new ObservableCollection<Message>();
             Users = new ObservableCollection<string>();
             Clients = new List<IrcClient>();
 
@@ -86,18 +90,27 @@ namespace Twitch_Chatter
                     var twitchMessage = new Message(message);
                     if (twitchMessage.IsPrivateMessage)
                     {
-                        Messages.Add($"{twitchMessage.DisplayName ?? twitchMessage.User}: {twitchMessage.UserMessage}");
+                        Messages.Add(twitchMessage);
+                        //Debug.WriteLine(twitchMessage.Color, twitchMessage.UserMessage);
 
-                        if (Messages.Count > 100)
+                        
+                        if (MessagesScrollViewer.VerticalOffset != MessagesScrollViewer.ScrollableHeight)
                         {
-                            Messages.RemoveAt(0);
+                            if (Messages.Count >= 1000)
+                            {
+                                Messages.RemoveAt(0);
+                            }
                         }
-
-                        //Console.WriteLine(MessagesScrollViewer.VerticalOffset);
-                        if (MessagesScrollViewer.VerticalOffset == MessagesScrollViewer.ScrollableHeight)
+                        else
                         {
                             MessagesScrollViewer.ScrollToBottom();
-                        }
+
+                            while (Messages.Count > 100)
+                            {
+                                Messages.RemoveAt(0);
+                            }
+                        }                   
+
                         continue;
                     }
 
